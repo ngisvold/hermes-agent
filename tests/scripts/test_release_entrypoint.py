@@ -628,6 +628,16 @@ def test_abandon_clears_one_of_two_attempts_a_concurrent_cut_left(source):
         _release(source, _advance(source, "later"), execute=_must_not_execute)
 
 
+def test_a_local_only_attempt_tag_is_not_a_claim(source):
+    commit = git(source, "rev-parse", "HEAD")
+    _claim(source, "0.21.5", commit)
+    git(source, "tag", "-a", "rc.915-v0.21.5", commit, "-m", "claim")
+
+    assert _abandon(source, "0.21.5")["marker"] == "abandoned-rc.1-v0.21.5"
+    result = _release(source, _advance(source, "later"))
+    assert result["tag"] == "rc.2-v0.21.5"
+
+
 def _clones(source, tmp_path):
     origin = git(source, "remote", "get-url", "origin")
     clones = []
